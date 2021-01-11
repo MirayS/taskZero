@@ -45,10 +45,10 @@ class ProductDataService
     public function parseDataFromFile(string $fileName, ParserInterface $parser): ParseResult {
         $result = [];
         $errors = [];
-
+        $itemsProcessed = 0;
 
         foreach ($parser->parse($fileName) as $key => $parsedRow) {
-
+            $itemsProcessed++;
             $productCode = $this->dataHelper->parseString($parsedRow[0]);
             try {
                 if (count($parsedRow) < 6)
@@ -74,6 +74,7 @@ class ProductDataService
         $parseResult->setStatus(true);
         $parseResult->setErrors($errors);
         $parseResult->setParsedData($result);
+        $parseResult->setItemsProcessed($itemsProcessed);
         return $parseResult;
     }
 

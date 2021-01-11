@@ -54,6 +54,11 @@ class ParseCsvCommand extends Command
         }
 
         $result = $this->productDataService->parseDataFromFile($file, new CsvParser());
+
+        $io->note("Items processed: ". $result->getItemsProcessed());
+        $io->note("Items parsed: ". $result->getItemsParsedCount());
+        $io->note("Items with errors: ". $result->getItemsWithErrorCount());
+
         if (count($result->getErrors())) {
             $io->warning($result->getErrors());
         }
