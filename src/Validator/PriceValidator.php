@@ -8,11 +8,17 @@ use App\Entity\ProductData;
 
 class PriceValidator implements ValidatorInterface
 {
+    private float $maxPrice = 1000;
+    private string $errorMessage = "The price more than {maxPrice}";
 
-    public function validate(ProductData $product): bool
+    public function validate(ProductData $product): ?string
     {
-        if ($product->getPrice() > 1000)
-            return false;
-        return true;
+        if ($product->getPrice() > $this->maxPrice)
+            return $this->getError();
+        return null;
+    }
+
+    private function getError(): string {
+        return str_replace('{maxPrice}', $this->maxPrice, $this->errorMessage);
     }
 }

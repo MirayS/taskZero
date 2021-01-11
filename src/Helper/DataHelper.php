@@ -26,7 +26,7 @@ class DataHelper
         }
 
         if (!is_numeric($data))
-            throw new \Exception("Invalid type");
+            throw new \Exception("'${data}' - is not numeric");
 
         $exchangeRate = $this->exchangeRateHelper->getRates(ExchangeRateHelper::GBP_CURRENCY, ExchangeRateHelper::USD_CURRENCY);
         if ($exchangeRate == null)
@@ -38,7 +38,7 @@ class DataHelper
 
     public function parseCount(string $data):int {
         if (!is_numeric($data))
-            throw new \Exception("Invalid type");
+            throw new \Exception("'${data}' - is not numeric");
         return intval($data);
     }
 

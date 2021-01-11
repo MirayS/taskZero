@@ -38,7 +38,7 @@ class ParseCsvCommand extends Command
         $this
             ->setDescription('Parse CSV file to database')
             ->addArgument('file', InputArgument::REQUIRED, 'path to the file to parse')
-            ->addArgument('test', InputArgument::OPTIONAL, 'Start in test mode')
+            ->addOption('test', null, InputOption::VALUE_OPTIONAL, 'Start in test mode', false);
         ;
     }
 
@@ -46,7 +46,7 @@ class ParseCsvCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $file = $input->getArgument('file');
-        $test = $input->getArgument('test');
+        $test = $input->getOption('test');
 
         if (!file_exists($file)) {
             $io->error('File not exists');
@@ -54,8 +54,14 @@ class ParseCsvCommand extends Command
         }
 
         $result = $this->productDataService->parseDataFromFile($file, new CsvParser());
-        if (!isset($test))
-            $this->productDataService->saveRangeToDataBase($result);
+        if (count($result->getErrors())) {
+            $io->warning($result->getErrors());
+        }
+        if ($test) {
+            $io->warning("Test mode is enabled");
+            return Command::SUCCESS;
+        }
+        $this->productDataService->saveRangeToDataBase($result->getParsedData());
 
         return Command::SUCCESS;
     }

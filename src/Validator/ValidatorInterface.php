@@ -8,5 +8,5 @@ use App\Entity\ProductData;
 
 interface ValidatorInterface
 {
-    public function validate(ProductData $product) :bool;
+    public function validate(ProductData $product) : ?string;
 }

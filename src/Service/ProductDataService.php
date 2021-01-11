@@ -4,15 +4,16 @@ declare(strict_types=1);
 namespace App\Service;
 
 
+use App\Entity\ParseResult;
 use App\Entity\ProductData;
 use App\Helper\DataHelper;
-use App\Helper\ExchangeRateHelper;
 use App\Parser\ParserInterface;
 use App\Repository\ProductDataRepository;
 use App\Validator\PriceAndCountValidator;
 use App\Validator\PriceValidator;
 use App\Validator\ValidatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Query\ParserResult;
 
 class ProductDataService
 {
@@ -39,29 +40,41 @@ class ProductDataService
     /**
      * @param string $fileName
      * @param ParserInterface $parser
-     * @return ProductData[]
+     * @return ParserResult
      */
-    public function parseDataFromFile(string $fileName, ParserInterface $parser): array {
+    public function parseDataFromFile(string $fileName, ParserInterface $parser): ParseResult {
         $result = [];
-        foreach ($parser->parse($fileName) as $parsedRow) {
+        $errors = [];
+
+
+        foreach ($parser->parse($fileName) as $key => $parsedRow) {
+
+            $productCode = $this->dataHelper->parseString($parsedRow[0]);
             try {
                 if (count($parsedRow) < 6)
-                    continue;
-                $productCode = $this->dataHelper->parseString($parsedRow[0]);
+                    throw new \Exception("Not enough columns");
                 if (count(array_filter($result, function($row) use($productCode) { return $row->getCode() == $productCode; })) != 0)
-                    continue;
+                    throw new \Exception("Product code ${productCode} already exists");
 
                 $row = $this->fillEntity($this->getProductDataEntity($productCode), $parsedRow);
-                if ($this->validateEntity($row, [
+                if (($error = $this->validateEntity($row, [
                     new PriceAndCountValidator(),
                     new PriceValidator(),
-                ]))
+                ])) != null)
+                {
+                    throw new \Exception($error);
+                }
                 $result[] = $row;
             } catch (\Exception $exception) {
-
+                $errors[] = $key . " => [${productCode}] " . $exception->getMessage();
             }
         }
-        return $result;
+
+        $parseResult = new ParseResult();
+        $parseResult->setStatus(true);
+        $parseResult->setErrors($errors);
+        $parseResult->setParsedData($result);
+        return $parseResult;
     }
 
     private function fillEntity(ProductData $productData, array $parsedRow):ProductData {
@@ -78,16 +91,16 @@ class ProductDataService
     /**
      * @param ProductData $entity
      * @param ValidatorInterface[] $validators
-     * @return bool
+     * @return string|null
      */
-    private function validateEntity(ProductData $entity, array $validators):bool {
+    private function validateEntity(ProductData $entity, array $validators):?string {
         foreach ($validators as $validator)
         {
-            if (!$validator->validate($entity))
-                return false;
+            if (($error = $validator->validate($entity)) != null)
+                return $error;
         }
 
-        return true;
+        return null;
     }
 
     private function getProductDataEntity(string $productCode): ProductData {
