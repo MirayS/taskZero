@@ -43,7 +43,6 @@ class ProductDataService
      */
     public function parseDataFromFile(string $fileName, ParserInterface $parser): array {
         $result = [];
-
         foreach ($parser->parse($fileName) as $parsedRow) {
             try {
                 if (count($parsedRow) < 6)
@@ -51,13 +50,8 @@ class ProductDataService
                 $productCode = $this->dataHelper->parseString($parsedRow[0]);
                 if (count(array_filter($result, function($row) use($productCode) { return $row->getCode() == $productCode; })) != 0)
                     continue;
-                $row = $this->repository->findOneByCode($productCode);
-                if ($row == null) {
-                    $row = new ProductData();
-                    $row->setAdded(new \DateTime());
-                    $row->setTimestamp(new \DateTime());
-                }
-                $row = $this->fillEntity($row, $parsedRow);
+
+                $row = $this->fillEntity($this->getProductDataEntity($productCode), $parsedRow);
                 if ($this->validateEntity($row, [
                     new PriceAndCountValidator(),
                     new PriceValidator(),
@@ -94,6 +88,16 @@ class ProductDataService
         }
 
         return true;
+    }
+
+    private function getProductDataEntity(string $productCode): ProductData {
+        $row = $this->repository->findOneByCode($productCode);
+        if ($row == null) {
+            $row = new ProductData();
+            $row->setAdded(new \DateTime());
+            $row->setTimestamp(new \DateTime());
+        }
+        return $row;
     }
 
     /**
