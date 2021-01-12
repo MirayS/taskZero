@@ -20,7 +20,9 @@
         "ext-curl": "*"
     },
     "require-dev": {
-        "symfony/maker-bundle": "^1.25"
+        "dama/doctrine-test-bundle": "^6.5",
+        "symfony/maker-bundle": "^1.25",
+        "symfony/phpunit-bridge": "^5.2"
     },
     "config": {
         "optimize-autoloader": true,

@@ -10,10 +10,15 @@ class CsvParser implements ParserInterface
     public function parse(string $filePath): \Generator
     {
         $row = 0;
-        $handle = fopen($filePath, 'r');
-        if ($handle === false) {
+        try  {
+            $handle = fopen($filePath, 'r');
+            if ($handle === false) {
+                throw new FileNotFoundException();
+            }
+        } catch (\Exception $exception) {
             throw new FileNotFoundException();
         }
+
 
         try {
             while (($data = fgetcsv($handle)) !== false) {
