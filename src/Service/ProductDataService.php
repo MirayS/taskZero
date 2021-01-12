@@ -87,7 +87,6 @@ class ProductDataService
 
     private function fillEntity(ProductData $productData, array $parsedRow): ProductData
     {
-        $productData->setCode($parsedRow[0]);
         $productData->setName($parsedRow[1]);
         $productData->setDescription($parsedRow[2]);
         $productData->setStock($this->dataHelper->parseCount($parsedRow[3]));
@@ -119,9 +118,8 @@ class ProductDataService
     {
         $row = $this->repository->findOneByCode($productCode);
         if ($row == null) {
-            $row = new ProductData();
+            $row = new ProductData($productCode);
             $row->setAdded(new \DateTime());
-            $row->setTimestamp(new \DateTime());
         }
 
         return $row;

@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Repository\ProductDataRepository;
-use Cassandra\Date;
-use Doctrine\Common\Annotations\Annotation\IgnoreAnnotation;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -63,26 +61,20 @@ class ProductData
      */
     private ?int $stock;
 
-    public function getId(): ?int
-    {
-        return $this->id;
+    public function __construct(
+        string $code
+    ) {
+        $this->code = $code;
+        $this->timestamp = new \DateTime();
     }
 
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
 
     public function setName(string $name): self
     {
         $this->name = $name;
+        $this->timestamp = new \DateTime();
 
         return $this;
-    }
-
-    public function getDescription(): ?string
-    {
-        return $this->description;
     }
 
     public function setDescription(string $description): self
@@ -95,13 +87,6 @@ class ProductData
     public function getCode(): ?string
     {
         return $this->code;
-    }
-
-    public function setCode(string $code): self
-    {
-        $this->code = $code;
-
-        return $this;
     }
 
     public function getAdded(): ?\DateTimeInterface
@@ -124,18 +109,6 @@ class ProductData
     public function setDiscontinued(?\DateTimeInterface $discontinued): self
     {
         $this->discontinued = $discontinued;
-
-        return $this;
-    }
-
-    public function getTimestamp(): ?\DateTimeInterface
-    {
-        return $this->timestamp;
-    }
-
-    public function setTimestamp(\DateTimeInterface $timestamp): self
-    {
-        $this->timestamp = $timestamp;
 
         return $this;
     }
