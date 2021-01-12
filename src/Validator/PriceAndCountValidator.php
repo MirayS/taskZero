@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Validator;
@@ -15,16 +16,19 @@ class PriceAndCountValidator implements ValidatorInterface
 
     public function validate(ProductData $product): ?string
     {
-        if ($product->getPrice() < $this->minPrice && $product->getStock() < $this->minCount)
+        if ($product->getPrice() < $this->minPrice && $product->getStock() < $this->minCount) {
             return $this->getErrorMessage();
+        }
 
         return null;
     }
 
-    private function getErrorMessage() :string {
+    private function getErrorMessage(): string
+    {
         $error = $this->errorMessage;
         $error = str_replace("{minPrice}", $this->minPrice, $error);
         $error = str_replace("{minCount}", $this->minCount, $error);
+
         return $error;
     }
 }

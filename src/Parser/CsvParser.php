@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Parser;
@@ -10,8 +11,9 @@ class CsvParser implements ParserInterface
     {
         $row = 0;
         $handle = fopen($filePath, 'r');
-        if ($handle === false)
+        if ($handle === false) {
             throw new FileNotFoundException();
+        }
 
         try {
             while (($data = fgetcsv($handle)) !== false) {

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Service;
@@ -13,7 +14,6 @@ use App\Validator\PriceAndCountValidator;
 use App\Validator\PriceValidator;
 use App\Validator\ValidatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Query\ParserResult;
 
 class ProductDataService
 {
@@ -30,8 +30,8 @@ class ProductDataService
      */
     private ProductDataRepository $repository;
 
-    public function __construct(ProductDataRepository $repository, EntityManagerInterface $em, DataHelper $dataHelper) {
-
+    public function __construct(ProductDataRepository $repository, EntityManagerInterface $em, DataHelper $dataHelper)
+    {
         $this->dataHelper = $dataHelper;
         $this->em = $em;
         $this->repository = $repository;
@@ -40,9 +40,10 @@ class ProductDataService
     /**
      * @param string $fileName
      * @param ParserInterface $parser
-     * @return ParserResult
+     * @return ParseResult
      */
-    public function parseDataFromFile(string $fileName, ParserInterface $parser): ParseResult {
+    public function parseDataFromFile(string $fileName, ParserInterface $parser): ParseResult
+    {
         $result = [];
         $errors = [];
         $itemsProcessed = 0;
@@ -51,41 +52,50 @@ class ProductDataService
             $itemsProcessed++;
             $productCode = $this->dataHelper->parseString($parsedRow[0]);
             try {
-                if (count($parsedRow) < 6)
+                if (count($parsedRow) < 6) {
                     throw new \Exception("Not enough columns");
-                if (count(array_filter($result, function($row) use($productCode) { return $row->getCode() == $productCode; })) != 0)
+                }
+                if (count(
+                        array_filter(
+                            $result,
+                            function ($row) use ($productCode) {
+                                return $row->getCode() == $productCode;
+                            }
+                        )
+                    ) != 0) {
                     throw new \Exception("Product code ${productCode} already exists");
+                }
 
                 $row = $this->fillEntity($this->getProductDataEntity($productCode), $parsedRow);
-                if (($error = $this->validateEntity($row, [
-                    new PriceAndCountValidator(),
-                    new PriceValidator(),
-                ])) != null)
-                {
+                if (($error = $this->validateEntity(
+                        $row,
+                        [
+                            new PriceAndCountValidator(),
+                            new PriceValidator(),
+                        ]
+                    )) != null) {
                     throw new \Exception($error);
                 }
                 $result[] = $row;
             } catch (\Exception $exception) {
-                $errors[] = $key . " => [${productCode}] " . $exception->getMessage();
+                $errors[] = $key." => [${productCode}] ".$exception->getMessage();
             }
         }
 
-        $parseResult = new ParseResult();
-        $parseResult->setStatus(true);
-        $parseResult->setErrors($errors);
-        $parseResult->setParsedData($result);
-        $parseResult->setItemsProcessed($itemsProcessed);
-        return $parseResult;
+        return new ParseResult(true, $itemsProcessed, $result, $errors);
     }
 
-    private function fillEntity(ProductData $productData, array $parsedRow):ProductData {
+    private function fillEntity(ProductData $productData, array $parsedRow): ProductData
+    {
         $productData->setCode($parsedRow[0]);
         $productData->setName($parsedRow[1]);
         $productData->setDescription($parsedRow[2]);
         $productData->setStock($this->dataHelper->parseCount($parsedRow[3]));
         $productData->setPrice($this->dataHelper->parsePriceInDollars($parsedRow[4]));
-        if ($this->dataHelper->parseBool($parsedRow[5]))
+        if ($this->dataHelper->parseBool($parsedRow[5])) {
             $productData->setDiscontinued(new \DateTime());
+        }
+
         return $productData;
     }
 
@@ -94,30 +104,34 @@ class ProductDataService
      * @param ValidatorInterface[] $validators
      * @return string|null
      */
-    private function validateEntity(ProductData $entity, array $validators):?string {
-        foreach ($validators as $validator)
-        {
-            if (($error = $validator->validate($entity)) != null)
+    private function validateEntity(ProductData $entity, array $validators): ?string
+    {
+        foreach ($validators as $validator) {
+            if (($error = $validator->validate($entity)) != null) {
                 return $error;
+            }
         }
 
         return null;
     }
 
-    private function getProductDataEntity(string $productCode): ProductData {
+    private function getProductDataEntity(string $productCode): ProductData
+    {
         $row = $this->repository->findOneByCode($productCode);
         if ($row == null) {
             $row = new ProductData();
             $row->setAdded(new \DateTime());
             $row->setTimestamp(new \DateTime());
         }
+
         return $row;
     }
 
     /**
      * @param ProductData[] $products
      */
-    public function saveRangeToDataBase(array $products) {
+    public function saveRangeToDataBase(array $products)
+    {
         foreach ($products as $product) {
             $this->em->persist($product);
         }

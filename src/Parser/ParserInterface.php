@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Parser;
@@ -6,5 +7,5 @@ namespace App\Parser;
 
 interface ParserInterface
 {
-    public function parse(string $filePath) : \Generator;
+    public function parse(string $filePath): \Generator;
 }

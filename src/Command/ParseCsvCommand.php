@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Command;
@@ -38,7 +39,7 @@ class ParseCsvCommand extends Command
         $this
             ->setDescription('Parse CSV file to database')
             ->addArgument('file', InputArgument::REQUIRED, 'path to the file to parse')
-            ->addOption('test', null, InputOption::VALUE_OPTIONAL, 'Start in test mode', false);
+            ->addOption('test', null, InputOption::VALUE_OPTIONAL, 'Start in test mode', false)
         ;
     }
 
@@ -55,15 +56,16 @@ class ParseCsvCommand extends Command
 
         $result = $this->productDataService->parseDataFromFile($file, new CsvParser());
 
-        $io->note("Items processed: ". $result->getItemsProcessed());
-        $io->note("Items parsed: ". $result->getItemsParsedCount());
-        $io->note("Items with errors: ". $result->getItemsWithErrorCount());
+        $io->note("Items processed: ".$result->getItemsProcessed());
+        $io->note("Items parsed: ".$result->getItemsParsedCount());
+        $io->note("Items with errors: ".$result->getItemsWithErrorCount());
 
         if (count($result->getErrors())) {
             $io->warning($result->getErrors());
         }
         if ($test) {
             $io->warning("Test mode is enabled");
+
             return Command::SUCCESS;
         }
         $this->productDataService->saveRangeToDataBase($result->getParsedData());

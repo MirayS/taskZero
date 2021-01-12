@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Helper;
@@ -18,19 +19,18 @@ class ExchangeRateHelper
 
     private function getRatesFromCache(string $from, string $to): ?float
     {
-        if (isset($this->cache[$from]) && isset($this->cache[$from][$to]))
-        {
+        if (isset($this->cache[$from]) && isset($this->cache[$from][$to])) {
             return $this->cache[$from][$to];
         }
         $result = $this->getRatesFromApi($from, $to);
-        if ($result != null)
-        {
+        if ($result != null) {
             $this->cache[$from][$to] = $result;
         }
+
         return $result;
     }
 
-    private function getRatesFromApi(string $from, string $to) : ?float
+    private function getRatesFromApi(string $from, string $to): ?float
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, "https://api.exchangeratesapi.io/latest?symbols=${to}&base=${from}");
@@ -41,6 +41,7 @@ class ExchangeRateHelper
         if (isset($jsonData->rates->$to)) {
             return $jsonData->rates->$to;
         }
+
         return null;
     }
 }

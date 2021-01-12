@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Validator;
@@ -13,12 +14,15 @@ class PriceValidator implements ValidatorInterface
 
     public function validate(ProductData $product): ?string
     {
-        if ($product->getPrice() > $this->maxPrice)
+        if ($product->getPrice() > $this->maxPrice) {
             return $this->getError();
+        }
+
         return null;
     }
 
-    private function getError(): string {
+    private function getError(): string
+    {
         return str_replace('{maxPrice}', $this->maxPrice, $this->errorMessage);
     }
 }
